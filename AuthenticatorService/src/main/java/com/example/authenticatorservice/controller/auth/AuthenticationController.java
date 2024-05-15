@@ -20,10 +20,6 @@ public class AuthenticationController {
     public ResponseEntity<AuthenticationResponse> register(
             @RequestBody RegisterRequest request
     ) {
-//        if (userRepo.findByEmail(request.getEmail()) != null) {
-//            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
-//        }
-
         return ResponseEntity.ok(service.register(request));
     }
 

@@ -26,10 +26,6 @@ public class UserController {
     public ResponseEntity<Void> changePassword(
             @RequestBody ChangePasswordRequest changePasswordRequest) {
         try {
-            System.out.println("hello controller");
-
-            if (true) return ResponseEntity.ok().build();
-
             if (!userservice.verifyOldPassword(changePasswordRequest.getEmail(), changePasswordRequest.getOldPassword())) {
                 return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
             }
