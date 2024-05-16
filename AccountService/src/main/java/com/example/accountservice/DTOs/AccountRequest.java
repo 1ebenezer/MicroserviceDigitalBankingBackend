@@ -11,24 +11,20 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @Builder
 public class AccountRequest {
-    //    private Integer accNumber;
+    //       private Integer accNumber;
 //    private String authorizationHeader;
     private AccountType accType;
 //    private Integer userId;
-    //    private Double balance;
+//    //    private Double balance;
 //    private String token; // Extracted token from the authorization header
-
+//
 //    public void extractToken(HttpServletRequest request, JwtValidator jwtValidator) {
 //        String authHeader = request.getHeader("Authorization");
-//
 //        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
 //            throw new RuntimeException("Missing or invalid authorization header");
 //        }
 //        String token = authHeader.substring(7);
-////        int expectedUserId = 0;
 //        if (!jwtValidator.isTokenValid(token)) {
-//            System.out.println("token");
-//            System.out.println(token);
 //            throw new RuntimeException("Invalid authorization token");
 //        }
 //        this.token = token;

@@ -42,31 +42,28 @@ public class AccountServiceImpl implements AccountService {
     }
 
     @Override
-    public AccountRequest createAccount(AccountRequest request) {
-//        String authorizationHeader = request.getAuthorizationHeader();
-//        System.out.println("authorizationHeader");
-//        System.out.println(authorizationHeader);
-//        String token = extractTokenFromHeader(authorizationHeader);
-//        if (token == null) {
-//            throw new RuntimeException("Missing authorization header");
-//        }
-//        if (!jwtValidator.isTokenValid(token)) {
-//            throw new RuntimeException("Invalid authorization token");
-//        }
-//        Integer userId = Integer.parseInt(jwtValidator.extractUserId(token));
-//        Account account = new Account();
-//        account.setUserId(userId);
-//        Account savedAccount = accRepo.save(account);
-//        return convertToDTO(savedAccount);
-
-        return null;
+    public AccountRequest createAccount(String authorizationHeader, AccountRequest request) {
+        String token = extractTokenFromHeader(authorizationHeader);
+        if (token == null) {
+            throw new RuntimeException("Missing or invalid authorization header");
+        }
+        if (!jwtValidator.isTokenValid(token)) {
+            throw new RuntimeException("Invalid authorization token");
+        }
+        Integer userId = Integer.parseInt(jwtValidator.extractUserId(token));
+        Account account = new Account();
+        account.setUserId(userId);
+        account.setAccType(request.getAccType()); // Set the account type from the request
+        Account savedAccount = accRepo.save(account);
+        return convertToDTO(savedAccount);
     }
-
+    
     private String extractTokenFromHeader(String authorizationHeader) {
 
         if (authorizationHeader == null || !authorizationHeader.startsWith("Bearer ")) {
             return null;
         }
+
         return authorizationHeader.substring(7);
     }
 

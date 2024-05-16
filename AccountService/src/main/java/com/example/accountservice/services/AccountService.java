@@ -16,7 +16,9 @@ import java.util.Optional;
 public interface AccountService {
     List<Account> getaAllAccounts();
 
-    AccountRequest createAccount(AccountRequest request);
+    AccountRequest createAccount(String authorizationHeader, AccountRequest request);
+
+//    AccountRequest createAccount(String authorizationHeader, AccountType accType);
 
     Optional<Account> getByAccNumber(Integer accNumber);
 

@@ -38,12 +38,7 @@ public class AccountController {
             HttpServletRequest httpRequest
     ) {
         try {
-            System.out.println("token");
-            System.out.println(token);
-//            String authorizationHeader = httpRequest.getHeader("Authorization");
-//            request.setAuthorizationHeader(authorizationHeader);
-//            request.extractToken(httpRequest, jwtValidator); // Extract token from the request
-            AccountRequest createdAccount = accountService.createAccount(request);
+            AccountRequest createdAccount = accountService.createAccount(token, request);
             return ResponseEntity.status(HttpStatus.CREATED).body(createdAccount);
         } catch (Exception e) {
             e.printStackTrace();
