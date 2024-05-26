@@ -12,8 +12,8 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class AccountInfo {
     //    private Integer id;
-//    private Integer accNumber;
+    private Integer accNumber;
     private double balance;
-    private AccountType accType;
-    private String userId;
+    private AccountType accountType;
+    private Integer userId;
 }

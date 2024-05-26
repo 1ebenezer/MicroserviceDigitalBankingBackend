@@ -20,17 +20,18 @@ public class Account implements Serializable {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
-    private Integer accNumber;
+    private Integer accountNumber;
     private double balance = 0.0;
-
-    private AccountType accType;
+    @Enumerated(EnumType.STRING)
+    private AccountType accountType;
     private Integer userId;
     @JsonIgnore
     @OneToMany(mappedBy = "account", cascade = CascadeType.ALL)
     private List<Transaction> transactions = new ArrayList<>();
 
     public Account() {
-        this.accNumber = generatedAccountNumber();
+
+        this.accountNumber = generatedAccountNumber();
     }
 
     private Integer generatedAccountNumber() {

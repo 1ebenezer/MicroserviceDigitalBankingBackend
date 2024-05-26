@@ -8,6 +8,7 @@ import org.springframework.stereotype.Service;
 
 import javax.crypto.SecretKey;
 import java.security.Key;
+import java.util.List;
 
 @Service
 public class JwtValidator {
@@ -31,29 +32,24 @@ public class JwtValidator {
 
     public String extractUserId(String token) {
         Claims claims = extractAllClaims(token);
-        System.out.println("claims");
-        System.out.println(claims.toString());
-
         return claims.get("userId").toString();
     }
 
+    public List<String> extractUserRoleFromToken(String token) {
+
+        Claims claims = extractAllClaims(token);
+        return claims.get("roles", List.class);
+    }
+
     public boolean isTokenValid(String token) {
-        System.out.println("key");
         System.out.println(key);
         try {
-//            System.out.println(Jwts.parserBuilder().setSigningKey(key).build().parseClaimsJws(token).getBody());
-//            Jwts.parserBuilder()
-//                    .setSigningKey(key).build()
-//                    .parseClaimsJws(token);
             extractAllClaims(token);
-
             return true;
         } catch (Exception e) {
-            System.out.println("exception");
             e.printStackTrace();
             return false;
         }
-
     }
 
     private Claims extractAllClaims(String token) {

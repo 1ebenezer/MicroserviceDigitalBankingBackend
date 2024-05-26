@@ -10,6 +10,6 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @Builder
 public class WithdrawRequest {
-    private Integer accNumber;
+    private Integer accountNumber;
     private Double amount;
 }

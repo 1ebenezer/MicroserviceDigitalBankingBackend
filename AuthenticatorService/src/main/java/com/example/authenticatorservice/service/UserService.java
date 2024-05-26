@@ -1,5 +1,6 @@
 package com.example.authenticatorservice.service;
 
+import com.example.authenticatorservice.controller.auth.UserResponse;
 import com.example.authenticatorservice.entity.Role;
 import com.example.authenticatorservice.entity.User;
 
@@ -20,6 +21,9 @@ public interface UserService {
     void changePassword(String email, String newPassword);
 
     boolean verifyOldPassword(String email, String oldPassword);
+
+
+    List<UserResponse> findAllUsers();
 
     User getUser(String firstName);
 

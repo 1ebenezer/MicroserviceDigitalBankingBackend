@@ -1,17 +1,16 @@
 package com.example.authenticatorservice.controller.auth;
 
-import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
 @Data
-@Builder
 @AllArgsConstructor
+@Builder
 @NoArgsConstructor
-@JsonInclude(JsonInclude.Include.NON_NULL)
-public class AuthenticationResponse {
-    private String token;
-    private String message;
+public class UserResponse {
+    private String firstName;
+    private String lastName;
+    private String email;
 }

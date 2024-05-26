@@ -8,6 +8,8 @@ import com.example.accountservice.Validator.JwtValidator;
 import com.example.accountservice.entity.Account;
 import com.example.accountservice.entity.Transaction;
 import com.example.accountservice.services.AccountService;
+import com.example.accountservice.services.Implementation.exceptions.BankAccountNotFoundException;
+import com.example.accountservice.services.Implementation.exceptions.InsufficientFundsException;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,60 +22,116 @@ import java.util.Optional;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/api/v1/Acount")
+@RequestMapping("/api/v1/account-service/accounts")
 public class AccountController {
     @Autowired
     private final AccountService accountService;
     private final JwtValidator jwtValidator;
 
-    @GetMapping("/read")
-    public ResponseEntity<List<Account>> getaAllAccounts() {
-        return ResponseEntity.ok(accountService.getaAllAccounts());
+    @GetMapping
+    public ResponseEntity<?> getaAllAccounts(
+            @RequestHeader("Authorization") String token) {
+        try {
+            return ResponseEntity.ok(accountService.getAllAccounts(token));
+        } catch (RuntimeException e) {
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(e.getMessage());
+        }
+
     }
 
-    @PostMapping("/create")
+    @PostMapping
     public ResponseEntity<?> createAccount(
             @RequestHeader("Authorization") String token,
             @RequestBody AccountRequest request,
             HttpServletRequest httpRequest
     ) {
         try {
-            AccountRequest createdAccount = accountService.createAccount(token, request);
+            AccountInfo createdAccount = accountService.createAccount(token, request);
             return ResponseEntity.status(HttpStatus.CREATED).body(createdAccount);
-        } catch (Exception e) {
+        } catch (RuntimeException e) {
             e.printStackTrace();
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(e.getMessage());
         }
     }
 
-    @GetMapping("/account/{accNumber}")                                           //getbyAccNumber
-    public ResponseEntity<?> getById(@PathVariable Integer accNumber) {
-        Optional<Account> accountby = accountService.getByAccNumber(accNumber);
-        return ResponseEntity.status(HttpStatus.OK).body(accountby);
+    // update
+    @PutMapping("/{accountNumber}")
+    public ResponseEntity<?> updateAccount(@RequestHeader("Authorization") String token, @PathVariable Integer accountNumber, @RequestBody AccountInfo accountInfo) {
+
+        Optional<Account> accountOptional = accountService.getByAccNumber(token, accountNumber);
+        if (!accountOptional.isPresent()) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Account not found");
+        }
+        AccountInfo updatedAccount = accountService.updateAccount(accountNumber, accountInfo, token);
+        return ResponseEntity.status(HttpStatus.OK).body(updatedAccount);
     }
 
-    @GetMapping("/viewbalance/{accNumber}")                                           //VIEWBALANCE
-    public ResponseEntity<Double> viewBalance(@PathVariable Integer accNumber) {
-        double balance = accountService.viewBalance(accNumber);
-        return ResponseEntity.status(HttpStatus.OK).body(balance);
+    @GetMapping("/{accountNumber}")                                           //getbyAccNumber
+    public ResponseEntity<?> getByAccountNumber(
+            @RequestHeader("Authorization") String token,
+            @PathVariable Integer accountNumber) {
+        try {
+            Optional<Account> accountby = accountService.getByAccNumber(token, accountNumber);
+            return ResponseEntity.status(HttpStatus.OK).body(accountby);
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(e.getMessage());
+        }
+    }
+
+    @GetMapping("/{accountNumber}/balance")                                           //VIEWBALANCE
+    public ResponseEntity<?> viewBalance(
+            @RequestHeader("Authorization") String token
+            , @PathVariable Integer accountNumber) {
+
+        try {
+            double balance = accountService.viewBalance(accountNumber, token);
+            return ResponseEntity.status(HttpStatus.OK).body(balance);
+
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(e.getMessage());
+        }
     }
 
     @PostMapping("/withdraw")
-    public ResponseEntity<?> withdraw(@RequestBody WithdrawRequest request) {
-        AccountInfo accountInfo = accountService.withdraw(request);
-        return ResponseEntity.status(HttpStatus.OK).body(accountInfo);
+    public ResponseEntity<?> withdraw(
+            @RequestHeader("Authorization") String token,
+            @RequestBody WithdrawRequest request) {
+
+        try {
+            AccountInfo accountInfo = accountService.withdraw(token, request);
+            return ResponseEntity.status(HttpStatus.OK).body(accountInfo);
+        } catch (InsufficientFundsException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+        } catch (BankAccountNotFoundException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(e.getMessage());
+        }
     }
 
     @PostMapping("/deposit")
-    public ResponseEntity<?> deposit(@RequestBody DepositRequest request) {
-        AccountInfo deposit = accountService.deposit(request);
-        return ResponseEntity.status(HttpStatus.OK).body(deposit);
+    public ResponseEntity<?> deposit(@RequestHeader("Authorization") String token,
+                                     @RequestBody DepositRequest request) {
+        try {
+            AccountInfo deposit = accountService.deposit(token, request);
+            System.out.println("Endpoint");
+            return ResponseEntity.status(HttpStatus.OK).body(deposit);
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(e.getMessage());
+        }
     }
 
-    @GetMapping("/{accNumber}/transactions")
-    public ResponseEntity<List<Transaction>> transactionHistory(@PathVariable Integer accNumber) {
-        List<Transaction> transactions = accountService.getTransactionHistory(accNumber);
-        return ResponseEntity.status(HttpStatus.OK).body(transactions);
+    @GetMapping("/{accountNumber}/transactions")
+    public ResponseEntity<?> transactionHistory(
+            @RequestHeader("Authorization") String token,
+            @PathVariable Integer accountNumber) {
+        try {
+            List<Transaction> transactions = accountService.getTransactionHistory(token, accountNumber);
+            return ResponseEntity.status(HttpStatus.OK).body(transactions);
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(e.getMessage());
+        }
     }
 
 }

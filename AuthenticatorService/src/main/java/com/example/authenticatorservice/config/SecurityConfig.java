@@ -25,8 +25,8 @@ public class SecurityConfig {
                 .csrf((csrf) -> csrf.disable())
                 .httpBasic((httpBasic) -> httpBasic.disable())
                 .authorizeHttpRequests((authorize) -> authorize
-                        .requestMatchers("/api/v1/auth/**",
-                                "/api/v1/user/**",
+                        .requestMatchers(
+                                "/api/v1/authentication-service/users/**",
                                 "/v2/api/docs",
                                 "/v3/api-docs",
                                 "/v3/api/docs/**",
@@ -39,7 +39,7 @@ public class SecurityConfig {
                                 "/swagger-ui.html",
                                 "swagger-ui-custom.html"
                         ).permitAll()
-                        .requestMatchers("/api/v1/admin/**").hasAuthority(Role.ADMIN.name())
+                        .requestMatchers("/api/v1/authentication-service/admin/**").hasAuthority(Role.ADMIN.name())
                         .anyRequest().authenticated()
                 )
                 .sessionManagement(sessionManagement -> sessionManagement

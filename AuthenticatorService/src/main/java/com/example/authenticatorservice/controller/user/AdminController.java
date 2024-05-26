@@ -1,5 +1,6 @@
 package com.example.authenticatorservice.controller.user;
 
+import com.example.authenticatorservice.controller.auth.UserResponse;
 import com.example.authenticatorservice.entity.User;
 import com.example.authenticatorservice.entity.dtos.RoleToUser;
 import com.example.authenticatorservice.service.UserService;
@@ -13,7 +14,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/v1/admin")
+@RequestMapping("/api/v1/authentication-service/admin")
 @RequiredArgsConstructor
 public class AdminController {
 
@@ -21,21 +22,19 @@ public class AdminController {
 
     @GetMapping("/users")
     @PreAuthorize("hasRole('ADMIN')")                               // read all users
-    public ResponseEntity<List<User>> getUsers() {
+    public ResponseEntity<List<UserResponse>> findAllUsers() {
 
-        System.out.println("i am hee");
-
-        return ResponseEntity.ok(userservice.getUsers());
+        return ResponseEntity.ok(userservice.findAllUsers());
     }
 
-    @PostMapping("/role/addtouser")
+    @PostMapping("/users/roles")
     @PreAuthorize("hasRole('ADMIN')")                               //add role to user
     public ResponseEntity<?> addRoleToUser(@RequestBody RoleToUser roleToUser) {
         userservice.addRoleToUser(roleToUser.getEmail(), roleToUser.getRole());
         return ResponseEntity.ok().build();
     }
 
-    @GetMapping("/user/{email}")
+    @GetMapping("/users/{email}")
     @PreAuthorize("hasRole('ADMIN')")                               //findByEmail
     public ResponseEntity<?> getUserByEmail(@PathVariable String email) {
         User user = userservice.getUserByEmail(email);
@@ -47,15 +46,16 @@ public class AdminController {
     }
 
     @PreAuthorize("hasRole('ADMIN')")
-    @PutMapping("/user/update")                                     //update
+    @PutMapping("/users")                                     //update
     public ResponseEntity<?> updateUser(@RequestBody User user) {
         return ResponseEntity.ok(userservice.updateUser(user));
     }
 
     @PreAuthorize("hasRole('ADMIN')")
-    @DeleteMapping("/user/{email}")                                 //delete
+    @DeleteMapping("/users/{email}")                                 //delete
     public ResponseEntity<?> deleteUser(@PathVariable String email) {
         try {
+            System.out.println("yellow");
             userservice.deleteUserByEmail(email);
             return ResponseEntity.ok().build();
         } catch (EntityNotFoundException e) {

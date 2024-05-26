@@ -12,6 +12,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.Optional;
 
 @Service
@@ -23,29 +24,39 @@ public class TransactionServiceImpl implements TransactionService {
     private final AccountRepository accountRepo;
 
     @Override
-    public TransactionRequest withdrawRecord(Integer accNumber, Double amount) {
-        return processTransaction(accNumber, amount, Type.WITHDRAW);
+    public TransactionRequest withdrawRecord(Integer accountNumber, Double amount, Integer adminId, Double balanceAfterTransaction) {
+        return processTransaction(accountNumber, amount, Type.WITHDRAW, adminId, balanceAfterTransaction);
     }
 
     @Override
-    public TransactionRequest depositRecord(Integer accNumber, Double amount) {
-        return processTransaction(accNumber, amount, Type.DEPOSIT);
+    public TransactionRequest depositRecord(Integer accountNumber, Double amount, Integer adminId, Double balanceAfterTransaction) {
+        return processTransaction(accountNumber, amount, Type.DEPOSIT, adminId, balanceAfterTransaction);
     }
 
-    private TransactionRequest processTransaction(Integer accNumber, Double amount, Type type) {
-        Optional<Account> optionalAccount = accountRepo.findByAccNumber(accNumber);
+    private TransactionRequest processTransaction(Integer accountNumber, Double amount, Type type, Integer adminId, Double balanceAfterTransaction) {
+        Optional<Account> optionalAccount = accountRepo.findByAccountNumber(accountNumber);
         Account account = optionalAccount.orElseThrow(() -> new RuntimeException("Account not found"));
 
         Transaction transaction = new Transaction();
-        transaction.setTime(LocalDateTime.now());
+        transaction.setTime(formatLocalDateTime(LocalDateTime.now()));
         transaction.setType(type);
         transaction.setAmount(amount);
         transaction.setAccount(account);
+        transaction.setAdminId(adminId);
+        transaction.setBalanceAfterTransaction(balanceAfterTransaction);
+//        double newBalance = type == Type.DEPOSIT ? account.getBalance() + amount : account.getBalance() - amount;
+//        transaction.setBalanceAfterTransaction(newBalance);
 
         account.getTransactions().add(transaction);
         transactionRepo.save(transaction);
 
         return mapToTransaction(transaction);
+    }
+
+    private LocalDateTime formatLocalDateTime(LocalDateTime dateTime) {
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
+        String formattedDateTime = dateTime.format(formatter);
+        return LocalDateTime.parse(formattedDateTime, formatter);
     }
 
     private TransactionRequest mapToTransaction(Transaction transaction) {
@@ -54,8 +65,9 @@ public class TransactionServiceImpl implements TransactionService {
         request.setTime(transaction.getTime());
         request.setType(transaction.getType());
         request.setAmount(transaction.getAmount());
-        request.setAccNumber(transaction.getAccount().getAccNumber());
-
+        request.setAccountNumber(transaction.getAccount().getAccountNumber());
+        request.setBalanceAfterTransaction(transaction.getBalanceAfterTransaction());
+        request.setAdminId(transaction.getAdminId());
         return request;
     }
 }

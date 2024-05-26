@@ -1,5 +1,6 @@
 package com.example.authenticatorservice.service.impl;
 
+import com.example.authenticatorservice.controller.auth.UserResponse;
 import com.example.authenticatorservice.entity.Role;
 import com.example.authenticatorservice.entity.User;
 import com.example.authenticatorservice.repository.UserRepository;
@@ -12,6 +13,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -69,13 +71,25 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    @Transactional
     public void deleteUserByEmail(String email) {
-        User user = userRepo.findByEmail(email).orElse(null);
-
-        if (user != null) {
-            userRepo.delete(user);
-        } else {
-            throw new RuntimeException("User with email " + email + " not found");
+//        User user = userRepo.findByEmail(email).orElse(null);
+//
+//        if (user != null) {
+//            userRepo.delete(user);
+//        } else {
+//            throw new RuntimeException("User with email " + email + " not found");
+//        }
+        try {
+            Optional<User> user = userRepo.findByEmail(email);
+            if (user.isPresent()) {
+                log.info("Deleting user: " + user.get());
+                userRepo.deleteByEmail(email);
+            } else {
+                log.warn("User with email " + email + " not found.");
+            }
+        } catch (Exception e) {
+            log.error("Error occurred while deleting user with email " + email, e);
         }
     }
 
@@ -97,6 +111,12 @@ public class UserServiceImpl implements UserService {
                         ("User not found " + email));
         String encodedPassword = user.getPassword();
         return passwordEncoder.matches(oldPassword, encodedPassword);
+    }
+
+    @Override
+    public List<UserResponse> findAllUsers() {
+        log.info("All users");
+        return userRepo.findAllUsers();
     }
 
     @Override

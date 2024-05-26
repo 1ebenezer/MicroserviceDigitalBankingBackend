@@ -1,6 +1,7 @@
 package com.example.accountservice.entity;
 
 import com.example.accountservice.entity.Enums.Type;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -17,10 +18,14 @@ public class Transaction {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer Id;
     private Double amount;
+    //    @Enumerated(EnumType.STRING)
     private Type type;
     private LocalDateTime time;
-    @ManyToOne
-    @JoinColumn(name = "accNumber")
+    private Double balanceAfterTransaction;
+    @JsonIgnore
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "accountID")
     private Account account;
+    private Integer adminId;
 
 }

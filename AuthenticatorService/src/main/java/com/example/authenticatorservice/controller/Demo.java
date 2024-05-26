@@ -7,12 +7,12 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("/api/v1/DemoController")
+@RequestMapping("/api/v1/validator")
 @RequiredArgsConstructor
 public class Demo {
 
     @GetMapping
     public ResponseEntity<String> sayHello() {
-        return ResponseEntity.ok("Welcome to Asgard");
+        return ResponseEntity.ok("Welcome to The bank");
     }
 }

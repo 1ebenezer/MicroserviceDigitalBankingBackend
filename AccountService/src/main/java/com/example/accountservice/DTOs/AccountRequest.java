@@ -13,7 +13,7 @@ import lombok.NoArgsConstructor;
 public class AccountRequest {
     //       private Integer accNumber;
 //    private String authorizationHeader;
-    private AccountType accType;
+    private AccountType accountType;
 //    private Integer userId;
 //    //    private Double balance;
 //    private String token; // Extracted token from the authorization header

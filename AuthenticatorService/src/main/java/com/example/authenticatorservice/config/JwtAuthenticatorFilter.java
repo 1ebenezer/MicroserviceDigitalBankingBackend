@@ -58,8 +58,8 @@ public class JwtAuthenticatorFilter extends OncePerRequestFilter {
             filterChain.doFilter(request, response);
         } catch (Exception e) {
             logger.error("Error processing JWT authentication", e);
-            String errorMessage = "an error in JWT authFILTER";
-            response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+            String errorMessage = "bad token or expired token";
+            response.setStatus(HttpServletResponse.SC_FORBIDDEN);
             response.getWriter().write(errorMessage);
             response.getWriter().flush();
         }

@@ -15,5 +15,8 @@ public class TransactionRequest {
     private LocalDateTime time;
     private Type type;
     private Double amount;
-    private Integer accNumber;
+    private Integer accountNumber;
+    private Double balanceAfterTransaction;
+    private Integer adminId;
+
 }
