@@ -1,9 +1,6 @@
 package com.example.accountservice.services.Implementation;
 
-import com.example.accountservice.DTOs.AccountInfo;
-import com.example.accountservice.DTOs.AccountRequest;
-import com.example.accountservice.DTOs.DepositRequest;
-import com.example.accountservice.DTOs.WithdrawRequest;
+import com.example.accountservice.DTOs.*;
 import com.example.accountservice.Validator.JwtValidator;
 import com.example.accountservice.entity.Account;
 import com.example.accountservice.entity.Transaction;
@@ -16,7 +13,6 @@ import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.core.context.SecurityContext;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -32,7 +28,6 @@ public class AccountServiceImpl implements AccountService {
     private TransactionService transactionService;
     @Autowired
     private JwtValidator jwtValidator;
-    private SecurityContext securityContext;
     private String secretKey = "FDA6A5B0436E06FB69F8A89FA6E2E89798E164935BFB4AD099748C2480E4AE2A";
 
     @Override
@@ -56,8 +51,16 @@ public class AccountServiceImpl implements AccountService {
     public Optional<Account> getByAccNumber(String authorizationHeader, Integer accountNumber) {
         String token = validateAuthorizationHeader(authorizationHeader, List.of("USER"));
         return Optional.of(validateAccountByAccNumberAndUserId(accountNumber, token));
-
     }
+
+    @Override
+    public Optional<Account> getAccountDetails(Integer accountNumber) {
+        return Optional.ofNullable(
+                accRepo.findByAccountNumber(accountNumber)
+                        .orElseThrow(() -> new RuntimeException("Account not found for account number: " + accountNumber))
+        );
+    }
+
 
     @Override
     public double viewBalance(Integer accountNumber, String authorizationHeader) {
@@ -110,20 +113,17 @@ public class AccountServiceImpl implements AccountService {
     }
 
     @Override
-    public AccountInfo updateAccount(Integer accNumber, AccountInfo request, String authorizationHeader) {
-        Account account = accRepo.findByAccountNumber(accNumber)
-                .orElseThrow(() -> new RuntimeException("Account not found"));
-
-        if (request.getBalance() != 0) {
+    public AccountInfo updateAccount(Integer accNumber, AccountUpdate request) {
+        Account account = getAccountDetails(accNumber).
+                orElseThrow(() -> new RuntimeException("Account not found for account number: " + accNumber));
+        System.out.println(account + "account number");
+        if (request.getBalance() > 0) {
             account.setBalance(request.getBalance());
         }
-        if (request.getAccountType() != null) {
-            account.setAccountType(request.getAccountType());
-        }
-
         Account updatedAccount = accRepo.save(account);
         return convertToDTO(updatedAccount);
     }
+
 
     private String validateAuthorizationHeader(String authorizationHeader, List<String> allowedRoles) {
         String token = extractTokenFromHeader(authorizationHeader);

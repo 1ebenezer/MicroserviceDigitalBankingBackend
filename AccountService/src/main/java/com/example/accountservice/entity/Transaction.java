@@ -28,4 +28,15 @@ public class Transaction {
     private Account account;
     private Integer adminId;
 
+    @Override
+    public String toString() {
+        return "Transaction{" +
+                "id=" + Id +
+                ", amount=" + amount +
+                ", type=" + type +
+                ", time=" + time +
+                ", balanceAfterTransaction=" + balanceAfterTransaction +
+                ", adminId=" + adminId +
+                '}';
+    }
 }

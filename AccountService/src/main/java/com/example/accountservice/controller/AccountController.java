@@ -1,12 +1,10 @@
 package com.example.accountservice.controller;
 
-import com.example.accountservice.DTOs.AccountInfo;
-import com.example.accountservice.DTOs.AccountRequest;
-import com.example.accountservice.DTOs.DepositRequest;
-import com.example.accountservice.DTOs.WithdrawRequest;
+import com.example.accountservice.DTOs.*;
 import com.example.accountservice.Validator.JwtValidator;
 import com.example.accountservice.entity.Account;
 import com.example.accountservice.entity.Transaction;
+import com.example.accountservice.repository.AccountRepository;
 import com.example.accountservice.services.AccountService;
 import com.example.accountservice.services.Implementation.exceptions.BankAccountNotFoundException;
 import com.example.accountservice.services.Implementation.exceptions.InsufficientFundsException;
@@ -27,6 +25,7 @@ public class AccountController {
     @Autowired
     private final AccountService accountService;
     private final JwtValidator jwtValidator;
+    private final AccountRepository accountRepository;
 
     @GetMapping
     public ResponseEntity<?> getaAllAccounts(
@@ -37,7 +36,6 @@ public class AccountController {
             e.printStackTrace();
             return ResponseEntity.status(HttpStatus.FORBIDDEN).body(e.getMessage());
         }
-
     }
 
     @PostMapping
@@ -57,14 +55,23 @@ public class AccountController {
 
     // update
     @PutMapping("/{accountNumber}")
-    public ResponseEntity<?> updateAccount(@RequestHeader("Authorization") String token, @PathVariable Integer accountNumber, @RequestBody AccountInfo accountInfo) {
+    public ResponseEntity<?> updateAccount(
+            @PathVariable Integer accountNumber,
+            @RequestBody AccountUpdate accountUpdate) {
 
-        Optional<Account> accountOptional = accountService.getByAccNumber(token, accountNumber);
-        if (!accountOptional.isPresent()) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Account not found");
+        try {
+            Optional<Account> accountOptional = accountRepository.findByAccountNumber(accountNumber);
+            System.out.println("here is the account controler");
+            System.out.println(accountOptional);
+            if (!accountOptional.isPresent()) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Account not found");
+            }
+            AccountInfo updatedAccount = accountService.updateAccount(accountNumber, accountUpdate);
+            return ResponseEntity.status(HttpStatus.OK).body(updatedAccount);
+        } catch (Exception ex) {
+            System.out.println(ex);
+            throw new RuntimeException("======> The error is " + ex.getMessage());
         }
-        AccountInfo updatedAccount = accountService.updateAccount(accountNumber, accountInfo, token);
-        return ResponseEntity.status(HttpStatus.OK).body(updatedAccount);
     }
 
     @GetMapping("/{accountNumber}")                                           //getbyAccNumber
@@ -76,6 +83,22 @@ public class AccountController {
             return ResponseEntity.status(HttpStatus.OK).body(accountby);
         } catch (RuntimeException e) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).body(e.getMessage());
+        }
+    }
+
+    @GetMapping("/dets/{accountNumber}")                                           //getbyAccNumber
+    public ResponseEntity<Object> getAccountDetails(
+            @PathVariable Integer accountNumber) {
+        try {
+            Optional<Account> account = accountService.getAccountDetails(accountNumber);
+            if (account != null) {
+                System.out.println(account);
+                return ResponseEntity.status(HttpStatus.OK).body(account);
+            } else {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Account details not found for account number: " + accountNumber);
+            }
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Failed to retrieve account details: " + e.getMessage());
         }
     }
 
@@ -133,5 +156,4 @@ public class AccountController {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).body(e.getMessage());
         }
     }
-
 }

@@ -1,10 +1,7 @@
 package com.example.accountservice.services;
 
 
-import com.example.accountservice.DTOs.AccountInfo;
-import com.example.accountservice.DTOs.AccountRequest;
-import com.example.accountservice.DTOs.DepositRequest;
-import com.example.accountservice.DTOs.WithdrawRequest;
+import com.example.accountservice.DTOs.*;
 import com.example.accountservice.entity.Account;
 import com.example.accountservice.entity.Transaction;
 import com.example.accountservice.services.Implementation.exceptions.BankAccountNotFoundException;
@@ -32,5 +29,7 @@ public interface AccountService {
 
     List<Transaction> getTransactionHistory(String authorizationHeader, Integer accNumber);
 
-    AccountInfo updateAccount(Integer accNumber, AccountInfo request, String authorizationHeader);
+    AccountInfo updateAccount(Integer accountNumber, AccountUpdate request);
+
+    Optional<Account> getAccountDetails(Integer accountNumber);
 }

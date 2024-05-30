@@ -43,4 +43,15 @@ public class Account implements Serializable {
         Random random = new Random();
         return 1000 + random.nextInt(9000);
     }
+
+    @Override
+    public String toString() {
+        return "Account{" +
+                "id=" + id +
+                ", accountNumber=" + accountNumber +
+                ", balance=" + balance +
+                ", accountType=" + accountType +
+                ", userId=" + userId +
+                '}';
+    }
 }
