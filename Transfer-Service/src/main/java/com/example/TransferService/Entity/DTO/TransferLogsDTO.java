@@ -1,6 +1,7 @@
 package com.example.TransferService.Entity.DTO;
 
 import com.example.TransferService.Entity.Status;
+import com.example.TransferService.Entity.TransferType;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -21,4 +22,5 @@ public class TransferLogsDTO {
     private Double amount;
     private Integer senderAccount;
     private LocalDateTime timestamp;
+    private TransferType transferType;
 }

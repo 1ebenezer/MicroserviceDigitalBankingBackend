@@ -1,9 +1,7 @@
 package com.example.TransferService.Service.TransferImpl;
 
-import com.example.TransferService.Entity.Account;
+import com.example.TransferService.Entity.*;
 import com.example.TransferService.Entity.DTO.*;
-import com.example.TransferService.Entity.Transfer;
-import com.example.TransferService.Entity.TransferLogs;
 import com.example.TransferService.Repository.TransferLogsRepository;
 import com.example.TransferService.Repository.TransferRepository;
 import com.example.TransferService.Service.TransferImpl.Exceptions.InsufficientBalanceException;
@@ -18,7 +16,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
 import reactor.core.publisher.Mono;
-import com.example.TransferService.Entity.Status;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -33,6 +30,19 @@ public class TransferServiceImplementation implements TransferService {
     private final TransferRepository transferRepository;
     private final TransferLogsRepository transferLogsRepository;
 
+    //
+    @Override
+    public List<TransferLogs> getTransferLogsByAccount(String token, Integer accountNumber) {
+        validateSenderToken(token);
+        Account account = validateUserAccountAssociation(token, accountNumber);
+        List<TransferLogs> transferLogs = transferLogsRepository.findByAccountNumber(accountNumber);
+        if (transferLogs.isEmpty()) {
+            throw new RuntimeException
+                    ("No transfer logs found for sender account: " + accountNumber);
+        }
+        return transferLogs;
+    }
+
     @Override
     public TransferResponse createTransfer(String senderToken, TransferDTO transferDTO) {
         validateSenderToken(senderToken);
@@ -45,7 +55,7 @@ public class TransferServiceImplementation implements TransferService {
         updateAccountDetails(senderAccount);
 
         Account receiverAccount = getAccountDetails(transferDTO.getReceiverAccount());
-        System.out.println("receiver account details" +receiverAccount);
+        System.out.println("receiver account details" + receiverAccount);
 
         if (receiverAccount == null || receiverAccount.getAccountNumber() == null) {
             throw new RuntimeException("Receiver account details not found.");
@@ -63,17 +73,27 @@ public class TransferServiceImplementation implements TransferService {
         Transfer savedTransfer = transferRepository.save(transfer);
 
 //        List<TransferLogs> transferLogs = new ArrayList<>();
-
-        TransferLogs transferLog = TransferLogs.builder().
+//
+        TransferLogs senderLog = TransferLogs.builder().
                 transfer(savedTransfer)
-                .senderAccount(senderAccount.getAccountNumber())
-                .receiverAccount(receiverAccount.getAccountNumber())
+                .accountNumber(senderAccount.getAccountNumber())
                 .timestamp(LocalDateTime.now())
                 .amount(transferDTO.getAmount())
                 .status(Status.DONE)
+                .transferType(TransferType.MoneyOut)
                 .build();
+//
 
-        transferLogsRepository.save(transferLog);
+        TransferLogs receieverLog = TransferLogs.builder().
+                transfer(savedTransfer)
+                .accountNumber(receiverAccount.getAccountNumber())
+                .timestamp(LocalDateTime.now())
+                .amount(transferDTO.getAmount())
+                .status(Status.DONE)
+                .transferType(TransferType.MoneyIn)
+                .build();
+        transferLogsRepository.save(senderLog);
+        transferLogsRepository.save(receieverLog);
 
         return TransferResponse.builder()
                 .message("Transfer successful")
@@ -85,19 +105,29 @@ public class TransferServiceImplementation implements TransferService {
     @Override
     public TransferResponseLogs createTransferLogs(TransferLogsDTO transferLogsDTO, Integer transferId) {
         Transfer transfer = transferRepository.findById(transferId)
-                .orElseThrow(() -> new RuntimeException("Transfer not found with ID: " + transferId));
+                .orElseThrow(() -> new RuntimeException
+                        ("Transfer not found with ID: " + transferId));
 
-        TransferLogs transferLogs = TransferLogs.builder()
+        TransferLogs senderLogs = TransferLogs.builder()
                 .status(transferLogsDTO.getStatus())
-                .receiverAccount(transferLogsDTO.getReceiverAccount())
-                .senderAccount(transferLogsDTO.getSenderAccount())
+                .accountNumber(transferLogsDTO.getSenderAccount())
                 .timestamp(LocalDateTime.now())
                 .amount(transferLogsDTO.getAmount())
                 .transfer(transfer)
+                .transferType(TransferType.MoneyOut)
                 .build();
-        System.out.println("TransferLogsDTO: " + transferLogsDTO);
 
-        TransferLogs savedTransferLogs = transferLogsRepository.save(transferLogs);
+        TransferLogs receiverLogs = TransferLogs.builder()
+                .status(transferLogsDTO.getStatus())
+                .accountNumber(transferLogsDTO.getReceiverAccount())
+                .timestamp(LocalDateTime.now())
+                .amount(transferLogsDTO.getAmount())
+                .transfer(transfer)
+                .transferType(TransferType.MoneyIn)
+                .build();
+
+        transferLogsRepository.save(senderLogs);
+        transferLogsRepository.save(receiverLogs);
 
         return TransferResponseLogs.builder()
                 .message("Transfer successful")
@@ -107,42 +137,19 @@ public class TransferServiceImplementation implements TransferService {
     }
 
 
-    @Override
-    public List<TransferLogs> getTransferLogsBySender(Integer senderAccount) {
-        List<TransferLogs> transferLogs = transferLogsRepository.findBySenderAccount(senderAccount);
-
-        if (transferLogs.isEmpty()) {
-            throw new RuntimeException("No transfer logs found for sender account: " + senderAccount);
-        }
-        return transferLogs;
-    }
-
-
-
-    private TransferLogsDTO convertToDto(TransferLogsDTO transferLogs) {
-        return TransferLogsDTO.builder()
-                .Id(transferLogs.getId())
-                .senderAccount(transferLogs.getSenderAccount())
-                .receiverAccount(transferLogs.getReceiverAccount())
-                .amount(transferLogs.getAmount())
-                .timestamp(transferLogs.getTimestamp())
-                .status(transferLogs.getStatus())
-                .build();
-    }
-
     private void validateSenderToken(String senderToken) {
         WebClient webClient = WebClient.create("http://localhost:8080/api/v1/validator");
 
         try {
             webClient.get()
                     .uri(uriBuilder -> uriBuilder.queryParam("token", senderToken).build())
-                    .header(HttpHeaders.AUTHORIZATION,  senderToken) // Include bearer token in authorization header
+                    .header(HttpHeaders.AUTHORIZATION, senderToken) // Include bearer token in authorization header
                     .retrieve()
                     .toBodilessEntity()
                     .block();
         } catch (WebClientResponseException ex) {
             if (ex.getStatusCode().equals(HttpStatus.FORBIDDEN)) {
-                throw new RuntimeException("Sender token is not valid.");
+                throw new RuntimeException("Sender token is not valid or expired.");
             }
             throw new RuntimeException("Failed to validate sender token: " + ex.getMessage(), ex);
         }
@@ -161,7 +168,7 @@ public class TransferServiceImplementation implements TransferService {
                 .block();
     }
 
-    private Account getAccountDetails( Integer accountNumber) {
+    private Account getAccountDetails(Integer accountNumber) {
 
         WebClient webClient = webClientBuilder.build();
         String url = "http://localhost:8082/api/v1/account-service/accounts/dets/{accountNumber}";
@@ -177,9 +184,10 @@ public class TransferServiceImplementation implements TransferService {
             throw new RuntimeException("wrong account number");
         }
     }
+
     private void updateAccountDetails(Account account) {
         WebClient webClient = webClientBuilder.build();
-        String url="http://localhost:8082/api/v1/account-service/accounts/{accountNumber}";
+        String url = "http://localhost:8082/api/v1/account-service/accounts/{accountNumber}";
         AccountUpdate accountUpdate = new AccountUpdate();
         accountUpdate.setBalance(account.getBalance());
 

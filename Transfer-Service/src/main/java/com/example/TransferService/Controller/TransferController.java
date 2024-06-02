@@ -1,12 +1,9 @@
 package com.example.TransferService.Controller;
 
 import com.example.TransferService.Entity.DTO.TransferDTO;
-import com.example.TransferService.Entity.DTO.TransferLogsDTO;
 import com.example.TransferService.Entity.DTO.TransferResponse;
-import com.example.TransferService.Entity.DTO.TransferResponseLogs;
 import com.example.TransferService.Entity.Status;
 import com.example.TransferService.Entity.TransferLogs;
-import com.example.TransferService.Repository.TransferRepository;
 import com.example.TransferService.Service.TransferService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,7 +11,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.time.LocalDateTime;
 import java.util.List;
 
 @RestController
@@ -26,7 +22,7 @@ public class TransferController {
 
     @PostMapping("/transfer")
     public ResponseEntity<TransferResponse> createTransfer(
-            @RequestHeader("Authorization")String token,
+            @RequestHeader("Authorization") String token,
             @RequestBody TransferDTO transferDTO) {
         try {
             TransferResponse response = transferService.createTransfer(token, transferDTO);
@@ -41,8 +37,9 @@ public class TransferController {
     }
 
     @GetMapping("/logs/{senderAccount}")
-    public ResponseEntity<List<TransferLogs>> getTransferLogsBySender(@PathVariable Integer senderAccount) {
-        List<TransferLogs> transferLogs = transferService.getTransferLogsBySender(senderAccount);
+    public ResponseEntity<List<TransferLogs>> getTransferLogsByAccountNumber(@RequestHeader("Authorization") String token,
+                                                                             @PathVariable Integer senderAccount) {
+        List<TransferLogs> transferLogs = transferService.getTransferLogsByAccount(token, senderAccount);
         return ResponseEntity.ok(transferLogs);
     }
 }

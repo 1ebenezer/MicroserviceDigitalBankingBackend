@@ -23,11 +23,12 @@ public class TransferLogs {
     private Integer id;
     @Enumerated(EnumType.STRING)
     private Status status;
-    private Integer senderAccount;
-    private Integer receiverAccount;
+    private Integer accountNumber;
     @JsonFormat(pattern = "dd-MM-yyyy HH:mm:ss")
     private LocalDateTime timestamp;
     private Double amount;
+    @Enumerated(EnumType.STRING)
+    private TransferType transferType;
     @JsonIgnore
     @ManyToOne
     @JoinColumn(name = "transfer_id", nullable = false)

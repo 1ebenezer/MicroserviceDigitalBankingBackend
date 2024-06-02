@@ -7,7 +7,7 @@ import org.springframework.stereotype.Repository;
 import java.util.List;
 
 @Repository
-public interface TransferLogsRepository extends JpaRepository<TransferLogs,Integer> {
-    List<TransferLogs> findBySenderAccount(Integer senderAccount);
+public interface TransferLogsRepository extends JpaRepository<TransferLogs, Integer> {
+    List<TransferLogs> findByAccountNumber(Integer accountNumber);
 
 }

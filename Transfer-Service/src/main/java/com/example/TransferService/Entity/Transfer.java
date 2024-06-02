@@ -24,8 +24,6 @@ public class Transfer implements Serializable {
     private Integer receiverAccount;
     private Double amount;
     private LocalDateTime timestamp;
-//    @Enumerated(EnumType.STRING)
-//    private TransferStatus transferStatus;
-    @OneToMany(mappedBy = "transfer", cascade = CascadeType.ALL,orphanRemoval = true)
+    @OneToMany(mappedBy = "transfer", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<TransferLogs> transferLogs;
 }
