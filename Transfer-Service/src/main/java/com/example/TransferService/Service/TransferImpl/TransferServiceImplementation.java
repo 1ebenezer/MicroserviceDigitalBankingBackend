@@ -30,15 +30,13 @@ public class TransferServiceImplementation implements TransferService {
     private final TransferRepository transferRepository;
     private final TransferLogsRepository transferLogsRepository;
 
-    //
     @Override
     public List<TransferLogs> getTransferLogsByAccount(String token, Integer accountNumber) {
         validateSenderToken(token);
         Account account = validateUserAccountAssociation(token, accountNumber);
         List<TransferLogs> transferLogs = transferLogsRepository.findByAccountNumber(accountNumber);
         if (transferLogs.isEmpty()) {
-            throw new RuntimeException
-                    ("No transfer logs found for sender account: " + accountNumber);
+            throw new RuntimeException("No transfer logs found for sender account: " + accountNumber);
         }
         return transferLogs;
     }
@@ -55,11 +53,12 @@ public class TransferServiceImplementation implements TransferService {
         updateAccountDetails(senderAccount);
 
         Account receiverAccount = getAccountDetails(transferDTO.getReceiverAccount());
-        System.out.println("receiver account details" + receiverAccount);
+        System.out.println("Receiver account details: " + receiverAccount);
 
         if (receiverAccount == null || receiverAccount.getAccountNumber() == null) {
             throw new RuntimeException("Receiver account details not found.");
         }
+
         receiverAccount.setBalance(receiverAccount.getBalance() + transferDTO.getAmount());
         updateAccountDetails(receiverAccount);
 
@@ -72,20 +71,17 @@ public class TransferServiceImplementation implements TransferService {
 
         Transfer savedTransfer = transferRepository.save(transfer);
 
-//        List<TransferLogs> transferLogs = new ArrayList<>();
-//
-        TransferLogs senderLog = TransferLogs.builder().
-                transfer(savedTransfer)
+        TransferLogs senderLog = TransferLogs.builder()
+                .transfer(savedTransfer)
                 .accountNumber(senderAccount.getAccountNumber())
                 .timestamp(LocalDateTime.now())
                 .amount(transferDTO.getAmount())
                 .status(Status.DONE)
                 .transferType(TransferType.MoneyOut)
                 .build();
-//
 
-        TransferLogs receieverLog = TransferLogs.builder().
-                transfer(savedTransfer)
+        TransferLogs receiverLog = TransferLogs.builder()
+                .transfer(savedTransfer)
                 .accountNumber(receiverAccount.getAccountNumber())
                 .timestamp(LocalDateTime.now())
                 .amount(transferDTO.getAmount())
@@ -93,7 +89,7 @@ public class TransferServiceImplementation implements TransferService {
                 .transferType(TransferType.MoneyIn)
                 .build();
         transferLogsRepository.save(senderLog);
-        transferLogsRepository.save(receieverLog);
+        transferLogsRepository.save(receiverLog);
 
         return TransferResponse.builder()
                 .message("Transfer successful")
@@ -105,8 +101,7 @@ public class TransferServiceImplementation implements TransferService {
     @Override
     public TransferResponseLogs createTransferLogs(TransferLogsDTO transferLogsDTO, Integer transferId) {
         Transfer transfer = transferRepository.findById(transferId)
-                .orElseThrow(() -> new RuntimeException
-                        ("Transfer not found with ID: " + transferId));
+                .orElseThrow(() -> new RuntimeException("Transfer not found with ID: " + transferId));
 
         TransferLogs senderLogs = TransferLogs.builder()
                 .status(transferLogsDTO.getStatus())
@@ -136,14 +131,13 @@ public class TransferServiceImplementation implements TransferService {
                 .build();
     }
 
-
     private void validateSenderToken(String senderToken) {
         WebClient webClient = WebClient.create("http://localhost:8080/api/v1/validator");
 
         try {
             webClient.get()
                     .uri(uriBuilder -> uriBuilder.queryParam("token", senderToken).build())
-                    .header(HttpHeaders.AUTHORIZATION, senderToken) // Include bearer token in authorization header
+                    .header(HttpHeaders.AUTHORIZATION, senderToken)
                     .retrieve()
                     .toBodilessEntity()
                     .block();
@@ -163,25 +157,23 @@ public class TransferServiceImplementation implements TransferService {
                 .uri(url, accountNumber)
                 .header("Authorization", token)
                 .retrieve()
-                .onStatus(HttpStatusCode::isError, clientResponse -> Mono.error(new RuntimeException("Wrong Sender account Number Check for mistakes")))
+                .onStatus(HttpStatusCode::isError, clientResponse -> Mono.error(new RuntimeException("Wrong Sender account Number. Check for mistakes.")))
                 .bodyToMono(Account.class)
                 .block();
     }
 
     private Account getAccountDetails(Integer accountNumber) {
-
         WebClient webClient = webClientBuilder.build();
         String url = "http://localhost:8082/api/v1/account-service/accounts/dets/{accountNumber}";
         try {
             Mono<Account> accountMono = webClient.get()
                     .uri(url, accountNumber)
                     .retrieve()
-                    .onStatus(HttpStatusCode::isError, clientResponse -> Mono.error(new RuntimeException("can not find the account,check account number")))
+                    .onStatus(HttpStatusCode::isError, clientResponse -> Mono.error(new RuntimeException("Cannot find the account. Check account number.")))
                     .bodyToMono(Account.class);
-            Account receiverAccount = accountMono.block();
-            return receiverAccount;
+            return accountMono.block();
         } catch (Exception e) {
-            throw new RuntimeException("wrong account number");
+            throw new RuntimeException("Wrong account number");
         }
     }
 
@@ -196,8 +188,8 @@ public class TransferServiceImplementation implements TransferService {
                     .uri(url, account.getAccountNumber())
                     .bodyValue(accountUpdate)
                     .retrieve()
-                    .onStatus(HttpStatusCode::isError,
-                            clientResponse -> Mono.error(new RuntimeException("Failed to update account details")))
+                    .onStatus(HttpStatusCode::isError, clientResponse -> Mono.error
+                            (new RuntimeException("Failed to update account details")))
                     .bodyToMono(Void.class)
                     .block();
         } catch (Exception e) {
