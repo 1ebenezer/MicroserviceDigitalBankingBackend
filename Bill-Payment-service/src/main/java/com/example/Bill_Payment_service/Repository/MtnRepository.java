@@ -6,5 +6,5 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import java.util.Optional;
 
 public interface MtnRepository extends JpaRepository<Mtn, Integer> {
-    Optional<Mtn> findByPhoneNumber(String phone);
+    Optional<Mtn> findByPhoneNumber(String phoneNumber);
 }

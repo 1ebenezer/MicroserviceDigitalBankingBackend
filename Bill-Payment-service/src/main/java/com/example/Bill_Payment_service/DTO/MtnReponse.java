@@ -5,8 +5,6 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.time.LocalDate;
-
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
@@ -15,7 +13,6 @@ public class MtnReponse {
 
     private String phoneNumber;
     private Double airtime;
-    private LocalDate paymentDate;
-    private String status;
+    private String email;
 
 }

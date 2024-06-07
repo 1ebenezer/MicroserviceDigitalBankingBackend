@@ -10,6 +10,6 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @Builder
 public class MtnRequest {
-    private String phoneNumber;
     private Double airtime;
+    private String email;
 }

@@ -2,6 +2,7 @@ package com.example.Bill_Payment_service.Controller;
 
 import com.example.Bill_Payment_service.DTO.MtnReponse;
 import com.example.Bill_Payment_service.DTO.MtnRequest;
+import com.example.Bill_Payment_service.DTO.MtnRequest2;
 import com.example.Bill_Payment_service.Services.MtnService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,14 +25,14 @@ public class MtnController {
     @PostMapping
     public ResponseEntity<MtnReponse> createNumber(@RequestBody MtnRequest mtnRequest) {
 
-        MtnReponse responseDTO = mtnAirtimePaymentService.buyAirtime(mtnRequest);
+        MtnReponse responseDTO = mtnAirtimePaymentService.createNumber(mtnRequest);
         return new ResponseEntity<>(responseDTO, HttpStatus.CREATED);
     }
 
     @PutMapping("/airtime")
-    public ResponseEntity<MtnReponse> buyAirtime(@RequestBody MtnRequest mtnRequest) {
+    public ResponseEntity<MtnReponse> buyAirtime(@RequestBody MtnRequest2 mtnRequest2) {
 
-        MtnReponse responseDTO = mtnAirtimePaymentService.buyAirtime(mtnRequest);
+        MtnReponse responseDTO = mtnAirtimePaymentService.buyAirtime(mtnRequest2);
         return new ResponseEntity<>(responseDTO, HttpStatus.CREATED);
     }
 

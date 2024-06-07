@@ -5,5 +5,9 @@
     <file url="file://$PROJECT_DIR$/AccountService/src/main/resources" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/AuthenticatorService/src/main/java" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/AuthenticatorService/src/main/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/Bill-Payment-service/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/Bill-Payment-service/src/main/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/Transfer-Service/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/Transfer-Service/src/main/resources" charset="UTF-8" />
   </component>
 </project>

@@ -4,7 +4,9 @@
     <modules>
       <module fileurl="file://$PROJECT_DIR$/AccountService/AccountService.iml" filepath="$PROJECT_DIR$/AccountService/AccountService.iml" />
       <module fileurl="file://$PROJECT_DIR$/AuthenticatorService/AuthenticatorService.iml" filepath="$PROJECT_DIR$/AuthenticatorService/AuthenticatorService.iml" />
+      <module fileurl="file://$PROJECT_DIR$/Bill-Payment-service/Bill-Payment-service.iml" filepath="$PROJECT_DIR$/Bill-Payment-service/Bill-Payment-service.iml" />
       <module fileurl="file://$PROJECT_DIR$/.idea/Parent-Microservice.iml" filepath="$PROJECT_DIR$/.idea/Parent-Microservice.iml" />
+      <module fileurl="file://$PROJECT_DIR$/Transfer-Service/Transfer-Service.iml" filepath="$PROJECT_DIR$/Transfer-Service/Transfer-Service.iml" />
     </modules>
   </component>
 </project>

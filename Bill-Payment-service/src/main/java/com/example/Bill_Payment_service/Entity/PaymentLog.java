@@ -15,11 +15,13 @@ import java.time.LocalDateTime;
 @Builder
 public class PaymentLog {
     @Id
-    @GeneratedValue(generator= "uuid")
+    @GeneratedValue(generator = "uuid")
     private Long id;
     @ManyToOne
-    @JoinColumn(name = "payment_id")
+    @JoinColumn(name = "bill_payment_id")
     private BillPayment billPayment;
     private LocalDateTime logDate;
     private String message;
+    @Enumerated(EnumType.STRING)
+    private Status status;
 }

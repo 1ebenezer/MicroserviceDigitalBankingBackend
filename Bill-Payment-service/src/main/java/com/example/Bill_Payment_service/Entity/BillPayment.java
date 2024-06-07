@@ -7,7 +7,6 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.io.Serializable;
-import java.time.LocalDateTime;
 import java.util.List;
 
 @Entity
@@ -22,10 +21,8 @@ public class BillPayment implements Serializable {
     private Integer accountNumber;
     private Double amount;
     private String biller;
-    private LocalDateTime paymentDate;
-    private Status Status;
 
-    @OneToMany(mappedBy = "transfer", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "billPayment", cascade = CascadeType.ALL)
     private List<PaymentLog> paymentLogs;
 
 }
