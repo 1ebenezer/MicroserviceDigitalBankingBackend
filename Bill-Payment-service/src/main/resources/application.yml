@@ -16,5 +16,18 @@ spring:
   jwt:
     secret: "FDA6A5B0436E06FB69F8A89FA6E2E89798E164935BFB4AD099748C2480E4AE2A"
 
+mail:
+  host: smtp.gmail.com
+  port: 25
+  username: eben4nkusi@gmail.com
+  password: cckuwntpxlojwxxx
+
+  properties:
+    mail:
+      smtp:
+        auth: true
+        starttls:
+          enable: true
+
 server:
   port: 8084

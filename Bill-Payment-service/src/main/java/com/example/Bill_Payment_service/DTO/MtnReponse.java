@@ -14,5 +14,7 @@ public class MtnReponse {
     private String phoneNumber;
     private Double airtime;
     private String email;
+    private String message;
+
 
 }

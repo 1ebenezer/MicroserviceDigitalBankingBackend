@@ -5,7 +5,6 @@ import com.example.Bill_Payment_service.DTO.MtnRequest;
 import com.example.Bill_Payment_service.DTO.MtnRequest2;
 import com.example.Bill_Payment_service.Entity.Mtn;
 import com.example.Bill_Payment_service.Repository.MtnRepository;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -14,13 +13,27 @@ import java.util.Optional;
 
 @Service
 public class MtnService {
+    private final MtnRepository mtnRepository;
+    private final EmailService emailService;
 
-    @Autowired
-    private MtnRepository mtnRepository;
+    MtnService(MtnRepository mtnRepository, EmailService emailService) {
+        this.mtnRepository = mtnRepository;
+        this.emailService = emailService;
+    }
+
+    //    @Autowired
+//    private MtnRepository mtnRepository;
+//    @Autowired
+//    private EmailService emailService;
+    private static long currentNumber = 780000000L;
 
     public MtnReponse createNumber(MtnRequest mtnRequest) {
 
+        String phoneNumber = generatePhoneNumber();
+
+
         Mtn mtn = new Mtn();
+        mtn.setPhoneNumber(phoneNumber);
         mtn.setAirtime(mtnRequest.getAirtime() != null ? mtnRequest.getAirtime() : 0.0);
         mtn.setEmail(mtnRequest.getEmail());
 
@@ -30,8 +43,27 @@ public class MtnService {
         response.setPhoneNumber(mtnaccount.getPhoneNumber());
         response.setAirtime(mtnaccount.getAirtime());
         response.setEmail(mtnaccount.getEmail());
+        response.setMessage("successfull creation");
+
+        String email = response.getEmail();
+        String Pnumber = response.getPhoneNumber();
+        String subject = "successful Creation";
+        String message = "Dear customer your new Number is " + Pnumber + " Welcome to MTN";
+
+        emailService.sendEmail(response.getEmail(), subject, message);
 
         return response;
+    }
+
+    private String generatePhoneNumber() {
+        if (currentNumber > 789999999L) {
+            currentNumber = 790000000L;
+        }
+        String prefix = String.valueOf(currentNumber).substring(0, 3);
+        long number = currentNumber % 10000000;
+        currentNumber++;
+
+        return "0" + prefix + String.format("%07d", number);
     }
 
     public MtnReponse buyAirtime(MtnRequest2 mtnRequest2) {
@@ -57,6 +89,15 @@ public class MtnService {
             response.setPhoneNumber(updatedPayment.getPhoneNumber());
             response.setAirtime(updatedPayment.getAirtime());
             response.setEmail(updatedPayment.getEmail());
+            response.setMessage("successfull purchase");
+
+            String email = response.getEmail();
+            Double amount = mtnRequest2.getAirtime();
+            Double airtime = response.getAirtime();
+            String subject = "successful Airtime";
+            String message = "Dear customer your airtime purchase of " + amount + " your current balance is " + airtime + " was succesfull enjoy!";
+
+            emailService.sendEmail(response.getEmail(), subject, message);
 
             return response;
         } else {

@@ -14,5 +14,7 @@ public class BillPaymentDTO {
     private String biller;
     private Integer accountNumber;
     private String phoneNumber;
+    private String message;
+    
 }
 

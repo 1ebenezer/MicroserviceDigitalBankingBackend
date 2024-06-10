@@ -23,6 +23,7 @@ import reactor.core.publisher.Mono;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
 
 @Service
 @Transactional
@@ -32,8 +33,10 @@ public class BilllPaymentImpl implements BillPaymentService {
     @Autowired
     private final WebClient.Builder webclientBuilder;
     private final BillPaymentRepository billPaymentRepository;
-
     private final PaymentRepository paymentRepository;
+
+    @Autowired
+    private final EmailService emailService;
 
     @Override
     public BillPaymentDTO makePayment(String token, BillPaymentDTO billPaymentDTO) {
@@ -50,6 +53,7 @@ public class BilllPaymentImpl implements BillPaymentService {
         billPayment.setAccountNumber(billPaymentDTO.getAccountNumber());
         billPayment.setAmount(billPaymentDTO.getAmount());
         billPayment.setBiller(billPaymentDTO.getBiller());
+        billPaymentDTO.setMessage("successfully bought airtime");
 
 
         billPaymentRepository.save(billPayment);
@@ -64,10 +68,21 @@ public class BilllPaymentImpl implements BillPaymentService {
         PaymentLog paymentLog = PaymentLog.builder()
                 .billPayment(billPayment)
                 .logDate(LocalDateTime.now())
-                .message("Airtime purchase successful")
+                .message("BillPaid successfully")
                 .status(Status.moneyOut)
                 .build();
         paymentRepository.save(paymentLog);
+
+        String email = getEmailByUserId(token, senderAccount.getUserId()); // Assuming the Account entity has an email field
+        String subject = "BILL PAID FROM YOUR ACCOUNT";
+        String message = "Dear Customer,\n\n" +
+                "You have successfully purchased airtime worth " + billPaymentDTO.getAmount() + ".\n" +
+                "Your remaining in your bank balance is: " + senderAccount.getBalance() + ".\n\n" +
+                "Thank you for using our service.\n\n" +
+                "Best Regards,\n" +
+                "Bank of Kigali";
+
+        emailService.sendEmail(email, subject, message);
 
         return billPaymentDTO;
     }
@@ -151,6 +166,31 @@ public class BilllPaymentImpl implements BillPaymentService {
         } catch (Exception e) {
             System.out.println("Error updating airtime: " + e.getMessage());
             e.printStackTrace();
+        }
+    }
+
+    private String getEmailByUserId(String token, Integer userId) {
+        WebClient webClient = webclientBuilder.build();
+        String url = "http://localhost:8080/api/v1/authentication-service/users/{id}";
+
+        try {
+            Map<String, String> response = webClient.get()
+                    .uri(url, userId)
+                    .header("Authorization", token)
+                    .retrieve()
+                    .onStatus(HttpStatusCode::isError, clientResponse -> Mono.error(new RuntimeException("Failed to retrieve user details")))
+                    .bodyToMono(Map.class)
+                    .block();
+
+            if (response != null && response.containsKey("email")) {
+                return response.get("email");
+            } else {
+                return null;
+            }
+        } catch (Exception e) {
+            System.out.println("Error retrieving user email: " + e.getMessage());
+            e.printStackTrace();
+            throw new RuntimeException("Failed to retrieve user email", e);
         }
     }
 }

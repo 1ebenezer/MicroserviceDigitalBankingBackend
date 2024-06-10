@@ -3,6 +3,7 @@ package com.example.authenticatorservice.controller.user;
 import com.example.authenticatorservice.controller.auth.UserResponse;
 import com.example.authenticatorservice.entity.User;
 import com.example.authenticatorservice.entity.dtos.RoleToUser;
+import com.example.authenticatorservice.repository.UserRepository;
 import com.example.authenticatorservice.service.UserService;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
@@ -19,6 +20,8 @@ import java.util.List;
 public class AdminController {
 
     private final UserService userservice;
+
+    private final UserRepository userRepository;
 
     @GetMapping("/users")
     @PreAuthorize("hasRole('ADMIN')")                               // read all users
@@ -51,6 +54,16 @@ public class AdminController {
     public ResponseEntity<?> updateUser(@RequestBody User user) {
         return ResponseEntity.ok(userservice.updateUser(user));
     }
+
+//    @GetMapping("/{id}")
+//    public ResponseEntity<?> getUserById(@PathVariable Integer id) {
+//        User user = userRepository.findById(id).orElse(null);
+//        if (user == null) {
+//            return ResponseEntity.notFound().build();
+//        }
+//        return ResponseEntity.ok(user);
+//
+//    }
 
     @PreAuthorize("hasRole('ADMIN')")
     @DeleteMapping("/users/{email}")                                 //delete
